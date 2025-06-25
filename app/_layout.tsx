@@ -4,12 +4,14 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { StoresProvider } from '@/contexts/StoresContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import LoginScreen from './login';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const { user } = useAuth();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -17,6 +19,10 @@ export default function RootLayout() {
   if (!loaded) {
     // Async font loading only occurs in development.
     return null;
+  }
+
+  if (!user) {
+    return <LoginScreen />;
   }
 
   return (

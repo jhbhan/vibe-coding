@@ -12,15 +12,22 @@ export default function HomeScreen() {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const router = useRouter();
   const { items } = useContext(ItemsContext);
-
+  let isMounted = true;
+  
   useEffect(() => {
+    let isMounted = true;
+  
     if (showLanding) {
       Animated.timing(fadeAnim, {
-        toValue: 0,
+        toValue: 1,
         duration: 3000,
         useNativeDriver: true,
-      }).start(() => setShowLanding(false));
+      }).start(() => {
+        if (isMounted) setShowLanding(false);
+      });
     }
+  
+    return () => { isMounted = false };
   }, [showLanding]);
 
   const handlePress = (item: ItemPrice) => {
