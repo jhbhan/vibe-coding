@@ -1,4 +1,4 @@
-import { supabase } from '@/constants/supabase';
+import { signInAsync, signOutAsync, supabase } from '@/constants/supabase';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
@@ -24,11 +24,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await signInAsync(email, password);
+    if (error) {
+      console.error('Login failed:', error.message);
+      return;
+    }
+    setUser(data.user);
   };
-
+  
   const signOut = async () => {
-    await supabase.auth.signOut();
+    const { error } = await signOutAsync();
+    if (error) {
+      alert('Something happened while trying to log out...');
+    } else {
+      setUser(null);
+    }
   };
 
   return (

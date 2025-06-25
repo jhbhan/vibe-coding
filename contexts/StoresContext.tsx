@@ -1,5 +1,6 @@
 import { GROCERY_STORES } from '@/constants/groceryStores';
-import React, { createContext, useContext, useState } from 'react';
+import { fetchStoresAsync } from '@/constants/supabase';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export interface StoresContextType {
   stores: string[];
@@ -10,6 +11,17 @@ export const StoresContext = createContext<StoresContextType | undefined>(undefi
 
 export const StoresProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [stores, setStores] = useState<string[]>(GROCERY_STORES);
+
+  const fetchItems = async () => {
+    const { data, error } = await fetchStoresAsync();
+    if (!error && data) setStores(data as string[]);
+    if (error)
+      alert(error)
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
 
   const addStore = (store: string) => {
     setStores(prev => [...prev, store]);

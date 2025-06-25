@@ -1,10 +1,10 @@
-import { supabase } from '@/constants/supabase';
-import { ItemPrice } from '@/types';
+import { fetchItemsAsync } from '@/constants/supabase';
+import { ItemViewModel } from '@/types';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface ItemsContextType {
-  items: ItemPrice[];
-  setItems: (items: ItemPrice[]) => void;
+  items: ItemViewModel[];
+  setItems: (items: ItemViewModel[]) => void;
   refresh: () => Promise<void>;
 }
 
@@ -17,11 +17,12 @@ const initialItemsContext = {
 export const ItemsContext = createContext<ItemsContextType>(initialItemsContext);
 
 export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<ItemPrice[]>([]);
+  const [items, setItems] = useState<ItemViewModel[]>([]);
 
   const fetchItems = async () => {
-    const { data, error } = await supabase.from('items').select('*');
-    if (!error && data) setItems(data as ItemPrice[]);
+    const data = await fetchItemsAsync();
+    if (data)
+      setItems(data)
   };
 
   useEffect(() => {
