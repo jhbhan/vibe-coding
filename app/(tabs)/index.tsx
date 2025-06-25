@@ -1,75 +1,99 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import ListItem from '@/components/ListItem';
+import { ItemsContext, ItemsProvider } from '@/contexts/ItemsContext';
+import { ItemPrice } from '@/types';
+import { useRouter } from 'expo-router';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { Animated, Dimensions, FlatList, StyleSheet, Text, View } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const { width, height } = Dimensions.get('window');
 
 export default function HomeScreen() {
+  const [showLanding, setShowLanding] = useState(true);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const router = useRouter();
+  const { items } = useContext(ItemsContext);
+
+  useEffect(() => {
+    if (showLanding) {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 3000,
+        useNativeDriver: true,
+      }).start(() => setShowLanding(false));
+    }
+  }, [showLanding]);
+
+  const handlePress = (item: ItemPrice) => {
+    router.push({
+      pathname: '/item-details',
+      params: {
+        ...item,
+        isFavorite: item.isFavorite ? 'true' : 'false',
+        prices: JSON.stringify(item.prices),
+        historicalLow: JSON.stringify(item.historicalLow),
+      },
+    });
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ItemsProvider>
+      <View style={styles.container}>
+        {showLanding ? (
+          <Animated.View style={[styles.landing, { opacity: fadeAnim }]}> 
+            <Text style={styles.title}>Compare</Text>
+          </Animated.View>
+        ) : (
+          <FlatList
+            data={items}
+            keyExtractor={item => item.id}
+            contentContainerStyle={styles.listContent}
+            renderItem={({ item }) => {
+              let lowest = item.prices.reduce((min, p) => (p.price < min.price ? p : min), item.prices[0]);
+              return (
+                <ListItem
+                  name={item.name}
+                  isFavorite={item.isFavorite}
+                  lowestPrice={lowest.price}
+                  lowestStore={lowest.store}
+                  onPress={() => handlePress(item)}
+                />
+              );
+            }}
+          />
+        )}
+      </View>
+    </ItemsProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    backgroundColor: '#3b5998', // blueish background
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  landing: {
     position: 'absolute',
+    top: 0,
+    left: 0,
+    width: width,
+    height: height,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#3b5998',
+    zIndex: 2,
+  },
+  title: {
+    fontSize: 48,
+    color: 'white',
+    fontWeight: 'bold',
+    letterSpacing: 2,
+  },
+  listContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: width * 0.9,
   },
 });

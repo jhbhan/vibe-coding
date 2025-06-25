@@ -4,6 +4,8 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
+import { AuthProvider } from '@/contexts/AuthContext';
+import { StoresProvider } from '@/contexts/StoresContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function RootLayout() {
@@ -19,10 +21,15 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <AuthProvider>
+        <StoresProvider>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="item-details" options={{ title: 'Item Details' }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+        </StoresProvider>
+      </AuthProvider>
       <StatusBar style="auto" />
     </ThemeProvider>
   );
