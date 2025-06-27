@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
   user: any;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<string>;
   signOut: () => Promise<void>;
 }
 
@@ -26,8 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     const { data, error } = await signInAsync(email, password);
     if (error) {
-      console.error('Login failed:', error.message);
-      return;
+      return 'Login failed: ' + error.message;
     }
     setUser(data.user);
   };

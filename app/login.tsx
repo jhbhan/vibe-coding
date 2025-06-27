@@ -25,7 +25,10 @@ export default function LoginScreen() {
     }
     setLoading(true);
     try {
-      await signIn(email, password);
+      const errorMessage = await signIn(email, password);
+      if (errorMessage) {
+        setError(errorMessage);
+      }
     } catch (e: any) {
       setError(e.message || 'Login failed.');
     } finally {
