@@ -1,10 +1,11 @@
-import { signInAsync, signOutAsync, supabase } from '@/constants/supabase';
+import { signInAsync, signOutAsync, signUpAsync, supabase } from '@/constants/supabase';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
   user: any;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,8 +42,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
+    const { data, error } = await signUpAsync(email, password, firstName, lastName);
+    if (error) {
+      console.error('Sign up failed:', error.message);
+      return;
+    }
+    setUser(data.user);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, signIn, signOut, signUp }}>
       {children}
     </AuthContext.Provider>
   );
