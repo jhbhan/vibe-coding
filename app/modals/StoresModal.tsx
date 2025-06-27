@@ -2,13 +2,9 @@ import { useStores } from '@/contexts/StoresContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { BaseModalProps } from './baseModal';
 
-interface StoresModalProps {
-  visible: boolean;
-  onClose: () => void;
-}
-
-export default function StoresModal({ visible, onClose }: StoresModalProps) {
+export default function StoresModal({ visible, onClose }: BaseModalProps) {
   const { stores, addStore } = useStores();
   const [newStore, setNewStore] = useState('');
 
