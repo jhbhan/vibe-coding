@@ -1,6 +1,5 @@
 import ListItem from '@/components/ListItem';
 import { ItemsContext, ItemsProvider } from '@/contexts/ItemsContext';
-import { ItemPrice } from '@/types';
 import { useRouter } from 'expo-router';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, FlatList, StyleSheet, Text, View } from 'react-native';
@@ -30,15 +29,9 @@ export default function HomeScreen() {
     return () => { isMounted = false };
   }, [showLanding]);
 
-  const handlePress = (item: ItemPrice) => {
+  const handlePress = () => {
     router.push({
-      pathname: '/item-details',
-      params: {
-        ...item,
-        isFavorite: item.isFavorite ? 'true' : 'false',
-        prices: JSON.stringify(item.prices),
-        historicalLow: JSON.stringify(item.historicalLow),
-      },
+      pathname: '/item-details'
     });
   };
 
@@ -61,8 +54,8 @@ export default function HomeScreen() {
                   name={item.name}
                   isFavorite={item.isFavorite}
                   lowestPrice={lowest.price}
-                  lowestStore={lowest.store}
-                  onPress={() => handlePress(item)}
+                  lowestStore={"hello world"}
+                  onPress={() => handlePress()}
                 />
               );
             }}

@@ -1,7 +1,7 @@
 export interface Item {
     id: string;
     name: string;
-    isFavorite: string;
+    isFavorite: boolean;
 }
 
 export interface ItemViewModel extends Item {
@@ -13,7 +13,7 @@ export interface ItemPrice {
     item_id: string,
     store_id: string,
     price: number,
-    created_at: Date
+    created_at?: Date
 };
   
 export interface Store {
