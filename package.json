@@ -10,6 +10,11 @@
     "deploy": "npx expo export -p web && npx eas-cli@latest deploy"
   },
   "dependencies": {
+    "@expo/vector-icons": "^14.1.0",
+    "@react-native-picker/picker": "^2.11.1",
+    "@react-navigation/bottom-tabs": "^7.3.10",
+    "@react-navigation/elements": "^2.3.8",
+    "@react-navigation/native": "^7.1.6",
     "@supabase/supabase-js": "^2.50.2",
     "expo": "^53.0.4",
     "expo-blur": "^14.1.5",

@@ -1,8 +1,10 @@
 import ListItem from '@/components/ListItem';
 import { ItemsContext, ItemsProvider } from '@/contexts/ItemsContext';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, FlatList, StyleSheet, Text, View } from 'react-native';
+import { Animated, Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import NewItemModal from '../modals/NewItemModal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -10,8 +12,8 @@ export default function HomeScreen() {
   const [showLanding, setShowLanding] = useState(true);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const router = useRouter();
-  const { items } = useContext(ItemsContext);
-  let isMounted = true;
+  const { items, refresh } = useContext(ItemsContext);
+  const [modalVisible, setModalVisible] = useState(false);
   
   useEffect(() => {
     let isMounted = true;
@@ -38,10 +40,22 @@ export default function HomeScreen() {
   return (
     <ItemsProvider>
       <View style={styles.container}>
+        <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
+          <MaterialIcons name="add" size={24} color="#fff" />
+          <Text style={styles.addBtnText}>Add Items</Text>
+        </TouchableOpacity>
         {showLanding ? (
           <Animated.View style={[styles.landing, { opacity: fadeAnim }]}> 
             <Text style={styles.title}>Compare</Text>
           </Animated.View>
+        ) : items.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No items yet.</Text>
+            <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
+              <MaterialIcons name="add" size={24} color="#fff" />
+              <Text style={styles.addBtnText}>Add Items</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           <FlatList
             data={items}
@@ -61,6 +75,10 @@ export default function HomeScreen() {
             }}
           />
         )}
+        <NewItemModal 
+          visible={modalVisible} 
+          onClose={() => setModalVisible(false)} 
+        />
       </View>
     </ItemsProvider>
   );
@@ -96,4 +114,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: width * 0.9,
   },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3b5998',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    alignSelf: 'flex-start',
+    gap: 8,
+  },
+  addBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 20,
+    color: '#3b5998',
+    marginBottom: 16,
+  }
 });
