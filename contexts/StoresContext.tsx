@@ -1,16 +1,32 @@
 import { GROCERY_STORES } from '@/constants/groceryStores';
 import { fetchStoresAsync } from '@/constants/supabase';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 export interface StoresContextType {
   stores: string[];
   addStore: (store: string) => void;
+  storeNames: Record<string, string>;
 }
 
-export const StoresContext = createContext<StoresContextType | undefined>(undefined);
+const initialStoreContext: StoresContextType = {
+  stores: GROCERY_STORES,
+  addStore: () => {},
+  storeNames: GROCERY_STORES.reduce((acc, store, index) => {
+    acc[index] = store;
+    return acc;
+  }, {} as Record<string, string>),
+};
+
+export const StoresContext = createContext<StoresContextType>(initialStoreContext);
 
 export const StoresProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [stores, setStores] = useState<string[]>(GROCERY_STORES);
+  const storeNames: Record<string, string> = useMemo(() => {
+    return stores.reduce((acc, store, index) => {
+      acc[index] = store;
+      return acc;
+    }, {} as Record<string, string>);
+  }, [stores]);
 
   const fetchItems = async () => {
     const { data, error } = await fetchStoresAsync();
@@ -28,7 +44,7 @@ export const StoresProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   return (
-    <StoresContext.Provider value={{ stores, addStore }}>
+    <StoresContext.Provider value={{ stores, addStore, storeNames }}>
       {children}
     </StoresContext.Provider>
   );

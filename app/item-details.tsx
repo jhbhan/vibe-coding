@@ -1,25 +1,23 @@
 import { ItemsContext } from '@/contexts/ItemsContext';
+import { StoresContext } from '@/contexts/StoresContext';
+import { ItemPrice } from '@/types';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useContext, useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-interface Price {
-  store: string;
-  price: number;
-}
-
 export default function ItemDetailsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { items, setItems } = useContext(ItemsContext);
+  const { storeNames } = useContext(StoresContext);
   const itemId = params.id as string;
   const item = items.find(i => i.id === itemId);
 
   // fallback for direct navigation
   const [name, setName] = useState(item?.name || (params.name as string));
   const [isFavorite, setIsFavorite] = useState(item?.isFavorite ?? (params.isFavorite as string) === 'true');
-  const [prices, setPrices] = useState<Price[]>(() => {
+  const [prices, setPrices] = useState<ItemPrice[]>(() => {
     if (item) return item.prices;
     try {
       return JSON.parse(params.prices as string);
@@ -39,7 +37,9 @@ export default function ItemDetailsScreen() {
     if (!item) return;
     setItems(
       items.map(i =>
-        i.id === itemId ? { ...i, name, isFavorite, prices } : i
+        i.id === itemId 
+          ? { ...i, name, isFavorite, prices }
+          : i
       )
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -54,7 +54,10 @@ export default function ItemDetailsScreen() {
   };
 
   const handleAddPrice = () => {
-    setPrices(prices => [...prices, { store: '', price: 0 }]);
+    setPrices(prices => [
+      ...prices,
+      { store_id: '', item_id: itemId, price: 0 }
+    ]);
   };
 
   const handleRemovePrice = (index: number) => {
@@ -94,7 +97,7 @@ export default function ItemDetailsScreen() {
           <View style={styles.priceRow}>
             <TextInput
               style={styles.storeInput}
-              value={item.store}
+              value={storeNames[item.store_id] || ''}
               onChangeText={text => handlePriceChange(index, 'store', text)}
               placeholder="Store Name"
               placeholderTextColor="#aaa"
