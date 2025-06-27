@@ -38,3 +38,16 @@ export const addItemAsync = async (item: ItemPrice) => {
 export const addStoreAsync = async (store: Store) => {
     return await supabase.from('stores').insert([store]);
 };
+
+export const signUpAsync = async (email: string, password: string, firstName: string, lastName: string) => {
+    return await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: {
+                first_name: firstName,
+                last_name: lastName
+            }
+        }
+    });
+};

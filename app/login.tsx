@@ -7,12 +7,20 @@ function validateEmail(email: string): boolean {
 }
 
 export default function LoginScreen() {
-  const { signIn } = useAuth();
+  const { signIn, signUp } = useAuth();
   const [email, setEmail] = useState('');
+  const [emailConfirm, setEmailConfirm] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
+  const isEmailMatch = !isSignUp || email === emailConfirm;
+  const isPasswordMatch = !isSignUp || password === passwordConfirm;
+  
   const handleLogin = async () => {
     setError('');
     if (!validateEmail(email)) {
@@ -36,9 +44,53 @@ export default function LoginScreen() {
     }
   };
 
+  const handleSignUp = async () => {
+    setError('');
+    if (!firstName.trim() || !lastName.trim()) {
+      setError('Please enter your first and last name.');
+      return;
+    }
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    if (!password) {
+      setError('Please enter a password.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await signUp(email, password, firstName, lastName);
+    } catch (e: any) {
+      setError(e.message || 'Sign up failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Sign In</Text>
+      <Text style={styles.title}>{isSignUp ? 'Sign Up' : 'Sign In'}</Text>
+      {isSignUp && (
+        <>
+          <TextInput
+            style={styles.input}
+            placeholder="First Name"
+            value={firstName}
+            onChangeText={setFirstName}
+            autoCapitalize="words"
+            textContentType="givenName"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Last Name"
+            value={lastName}
+            onChangeText={setLastName}
+            autoCapitalize="words"
+            textContentType="familyName"
+          />
+        </>
+      )}
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -49,6 +101,19 @@ export default function LoginScreen() {
         onChangeText={setEmail}
         textContentType="emailAddress"
       />
+      {isSignUp && (
+          <TextInput
+            style={styles.input}
+            placeholder="Confirm Email"
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            value={emailConfirm}
+            onChangeText={setEmailConfirm}
+            textContentType="emailAddress"
+          />
+      )}
+      {!isPasswordMatch ? <Text style={styles.error}>Emails do not match</Text> : null}
       <TextInput
         style={styles.input}
         placeholder="Password"
@@ -57,15 +122,35 @@ export default function LoginScreen() {
         onChangeText={setPassword}
         textContentType="password"
       />
+      {isSignUp && (
+          <TextInput
+            style={styles.input}
+            placeholder="Confirm Password"
+            secureTextEntry
+            value={passwordConfirm}
+            onChangeText={setPasswordConfirm}
+            textContentType="password"
+          />
+      )}
+      {!isPasswordMatch ? <Text style={styles.error}>Passwords do not match</Text> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <TouchableOpacity
         style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={handleLogin}
-        disabled={loading}
-        accessibilityLabel="Sign In"
+        onPress={isSignUp ? handleSignUp : handleLogin}
+        disabled={loading && (!isEmailMatch || !isPasswordMatch)}
+        accessibilityLabel={isSignUp ? 'Sign Up' : 'Sign In'}
       >
-        <Text style={styles.buttonText}>{loading ? 'Signing In...' : 'Sign In'}</Text>
+        <Text style={styles.buttonText}>{loading ? (isSignUp ? 'Signing Up...' : 'Signing In...') : (isSignUp ? 'Sign Up' : 'Sign In')}</Text>
       </TouchableOpacity>
+      {!isSignUp ? (
+        <TouchableOpacity onPress={() => setIsSignUp(true)} style={styles.linkBtn} accessibilityLabel="Go to Sign Up">
+          <Text style={styles.linkText}>Sign Up</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity onPress={() => setIsSignUp(false)} style={styles.linkBtn} accessibilityLabel="Go to Sign In">
+          <Text style={styles.linkText}>Sign In</Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 }
@@ -116,6 +201,15 @@ const styles = StyleSheet.create({
   error: {
     color: '#d11a2a',
     marginBottom: 8,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  linkBtn: {
+    marginTop: 16,
+  },
+  linkText: {
+    color: '#3b5998',
+    textDecorationLine: 'underline',
     fontSize: 16,
     textAlign: 'center',
   },
