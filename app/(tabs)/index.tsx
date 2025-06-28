@@ -40,10 +40,6 @@ export default function HomeScreen() {
   return (
     <ItemsProvider>
       <View style={styles.container}>
-        <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
-          <MaterialIcons name="add" size={24} color="#fff" />
-          <Text style={styles.addBtnText}>Add Items</Text>
-        </TouchableOpacity>
         {showLanding ? (
           <Animated.View style={[styles.landing, { opacity: fadeAnim }]}> 
             <Text style={styles.title}>Compare</Text>
@@ -57,23 +53,29 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-          <FlatList
-            data={items}
-            keyExtractor={item => item.id}
-            contentContainerStyle={styles.listContent}
-            renderItem={({ item }) => {
-              let lowest = item.prices.reduce((min, p) => (p.price < min.price ? p : min), item.prices[0]);
-              return (
-                <ListItem
-                  name={item.name}
-                  isFavorite={item.isFavorite}
-                  lowestPrice={lowest.price}
-                  lowestStore={"hello world"}
-                  onPress={() => handlePress()}
-                />
-              );
-            }}
-          />
+          <>
+            <FlatList
+              data={items}
+              keyExtractor={item => item.id}
+              contentContainerStyle={styles.listContent}
+              renderItem={({ item }) => {
+                let lowest = item.prices.reduce((min, p) => (p.price < min.price ? p : min), item.prices[0]);
+                return (
+                  <ListItem
+                    name={item.name}
+                    isFavorite={item.isFavorite}
+                    lowestPrice={lowest.price}
+                    lowestStore={"hello world"}
+                    onPress={() => handlePress()}
+                  />
+                );
+              }}
+            />
+            <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
+              <MaterialIcons name="add" size={24} color="#fff" />
+              <Text style={styles.addBtnText}>Add Items</Text>
+            </TouchableOpacity>
+          </>
         )}
         <NewItemModal 
           visible={modalVisible} 

@@ -3,10 +3,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BaseModalProps } from './baseModal';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function StoresModal({ visible, onClose }: BaseModalProps) {
   const { stores, addStore } = useStores();
   const [newStore, setNewStore] = useState('');
+  const { user } = useAuth();
 
   const handleAdd = () => {
     if (newStore.trim()) {
@@ -27,10 +29,15 @@ export default function StoresModal({ visible, onClose }: BaseModalProps) {
           </View>
           <FlatList
             data={stores}
-            keyExtractor={item => item}
+            keyExtractor={item => item.id}
             renderItem={({ item }) => (
               <View style={styles.storeItem}>
-                <Text style={styles.storeText}>{item}</Text>
+                <Text style={styles.storeText}>{item.name}</Text>
+                {user?.email === item.user_id && (
+                  <TouchableOpacity onPress={() => addStore(item.name)}>
+                    <MaterialIcons name="delete" size={20} color="#3b5998" />
+                  </TouchableOpacity>
+                )}
               </View>
             )}
             style={styles.list}

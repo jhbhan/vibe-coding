@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f7f9fb',
-    padding: 24,
+    marginHorizontal: 16,
     marginBottom: 80
   },
   welcome: {

@@ -13,11 +13,13 @@ export interface ItemPrice {
     item_id: string,
     store_id: string,
     price: number,
-    created_at?: Date
+    created_at?: Date,
+    user_id?: string // Optional, if the Item Price is user generated
 };
   
 export interface Store {
     id: string;
     name: string;
     image: string;
+    user_id?: string, // Optional, if the store is user generated
 }
