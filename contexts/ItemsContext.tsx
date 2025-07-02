@@ -1,16 +1,16 @@
-import { fetchItemsAsync } from '@/constants/supabase';
-import { ItemViewModel } from '@/types';
+import { addItemAsync, fetchItemsAsync } from '@/constants/supabase';
+import { ItemPrice, ItemViewModel } from '@/types';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface ItemsContextType {
   items: ItemViewModel[];
-  setItems: (items: ItemViewModel[]) => void;
+  addItem: (items: ItemViewModel) => void;
   refresh: () => Promise<void>;
 }
 
 const initialItemsContext = {
   items: [],
-  setItems: () => {},
+  addItem: () => {},
   refresh: async () => {},
 }
 
@@ -25,12 +25,32 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setItems(data)
   };
 
+  const addItem = async (item: ItemViewModel) => {
+    if (!item || items.map(i => i.name).includes(item.name))
+      return; // Prevent duplicates or empty items
+
+    const itemToAdd: ItemPrice = {
+      item_id: '',
+      store_id: '',
+      price: 0
+    };
+    const { data, error } = await addItemAsync(itemToAdd);
+
+    if (error) {
+      alert('Error adding item: ' + error.message);
+      return;
+    }
+    else {
+      setItems(prev => [...prev, data as ItemViewModel]);
+    }
+  };
+
   useEffect(() => {
     fetchItems();
   }, []);
 
   return (
-    <ItemsContext.Provider value={{ items, setItems, refresh: fetchItems }}>
+    <ItemsContext.Provider value={{ items, addItem, refresh: fetchItems }}>
       {children}
     </ItemsContext.Provider>
   );
