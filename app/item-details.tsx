@@ -1,49 +1,24 @@
-import { ItemsContext } from '@/contexts/ItemsContext';
-import { StoresContext } from '@/contexts/StoresContext';
+import { ItemsContext, useItems } from '@/contexts/ItemsContext';
+import { StoresContext, useStores } from '@/contexts/StoresContext';
 import { ItemPrice } from '@/types';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function ItemDetailsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { items, setItems } = useContext(ItemsContext);
-  const { storeNames } = useContext(StoresContext);
+  const { items } = useItems()
+  const { storeNames, stores } = useStores();
   const itemId = params.id as string;
   const item = items.find(i => i.id === itemId);
 
   // fallback for direct navigation
-  const [name, setName] = useState(item?.name || (params.name as string));
-  const [isFavorite, setIsFavorite] = useState(item?.isFavorite ?? (params.isFavorite as string) === 'true');
-  const [prices, setPrices] = useState<ItemPrice[]>(() => {
-    if (item) return item.prices;
-    try {
-      return JSON.parse(params.prices as string);
-    } catch {
-      return [];
-    }
-  });
-
-  useEffect(() => {
-    if (!item) return;
-    setName(item.name);
-    setIsFavorite(item.isFavorite);
-    setPrices(item.prices);
-  }, [itemId]);
-
-  useEffect(() => {
-    if (!item) return;
-    setItems(
-      items.map(i =>
-        i.id === itemId 
-          ? { ...i, name, isFavorite, prices }
-          : i
-      )
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, isFavorite, prices]);
+  const [name, setName] = useState(item?.name);
+  const [isFavorite, setIsFavorite] = useState(item?.isFavorite);
+  const [prices, setPrices] = useState<ItemPrice[]>(item.prices);
 
   const handlePriceChange = (index: number, field: 'store' | 'price', value: string) => {
     setPrices(prices =>
@@ -95,13 +70,16 @@ export default function ItemDetailsScreen() {
         keyExtractor={(_, idx) => idx.toString()}
         renderItem={({ item, index }) => (
           <View style={styles.priceRow}>
-            <TextInput
-              style={styles.storeInput}
-              value={storeNames[item.store_id] || ''}
-              onChangeText={text => handlePriceChange(index, 'store', text)}
-              placeholder="Store Name"
-              placeholderTextColor="#aaa"
-            />
+            <Picker
+              selectedValue={item.store_id}
+              onValueChange={(storeId) => handlePriceChange(index, 'store', storeId)}
+              style={styles.priceInput}
+            >
+              <Picker.Item label="Select Store" value="" />
+              {stores.map((store, idx) => (
+                <Picker.Item key={idx} label={store.name} value={store.id} />
+              ))}
+            </Picker>
             <TextInput
               style={styles.priceInput}
               value={item.price.toString()}

@@ -1,10 +1,11 @@
 import ListItem from '@/components/ListItem';
-import { ItemsContext, ItemsProvider } from '@/contexts/ItemsContext';
+import { ItemsContext, ItemsProvider, useItems } from '@/contexts/ItemsContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import NewItemModal from '../modals/NewItemModal';
+import { useStores } from '@/contexts/StoresContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -12,8 +13,9 @@ export default function HomeScreen() {
   const [showLanding, setShowLanding] = useState(true);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const router = useRouter();
-  const { items, refresh } = useContext(ItemsContext);
-  const [modalVisible, setModalVisible] = useState(false);
+  const { items } = useItems();
+  const { storeNames } = useStores();
+   const [modalVisible, setModalVisible] = useState(false);
   
   useEffect(() => {
     let isMounted = true;
@@ -31,9 +33,12 @@ export default function HomeScreen() {
     return () => { isMounted = false };
   }, [showLanding]);
 
-  const handlePress = () => {
+  const handlePress = (id: string) => {
     router.push({
-      pathname: '/item-details'
+      pathname: '/item-details',
+      params: {
+        itemId: id
+      }
     });
   };
 
@@ -65,8 +70,8 @@ export default function HomeScreen() {
                     name={item.name}
                     isFavorite={item.isFavorite}
                     lowestPrice={lowest.price}
-                    lowestStore={"hello world"}
-                    onPress={() => handlePress()}
+                    lowestStore={storeNames[lowest.store_id] ?? "N/A"}
+                    onPress={() => handlePress(item.id)}
                   />
                 );
               }}

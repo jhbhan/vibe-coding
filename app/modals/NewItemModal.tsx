@@ -70,7 +70,7 @@ export default function NewItemModal(props: BaseModalProps) {
               >
                 <Picker.Item label="Select Store" value="" />
                 {stores.map((store, idx) => (
-                  <Picker.Item key={idx} label={store} value={store} />
+                  <Picker.Item key={idx} label={store.name} value={store.id} />
                 ))}
               </Picker>
               {addError ? <Text style={styles.error}>{addError}</Text> : null}

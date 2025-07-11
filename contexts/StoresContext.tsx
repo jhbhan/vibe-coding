@@ -6,11 +6,13 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 export interface StoresContextType {
   stores: Store[];
   addStore: (store: string) => Promise<void>;
+  storeNames: Record<number, string>
 }
 
 const initialStoreContext: StoresContextType = {
   stores: GROCERY_STORES,
-  addStore: async () => {}
+  addStore: async () => {},
+  storeNames: {}
 };
 
 export const StoresContext = createContext<StoresContextType>(initialStoreContext);
@@ -46,9 +48,17 @@ export const StoresProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setStores(prev => [...prev, data as Store]);
     }
   };
+  
+  const storeNames: Record<number, string> = useMemo(() => {
+    var storeRecord: Record<number, string> = {};
+    stores.forEach((x) => {
+      storeRecord[x.id] = x.name
+    })
+    return storeRecord;
+  }, stores);
 
   return (
-    <StoresContext.Provider value={{ stores, addStore }}>
+    <StoresContext.Provider value={{ stores, addStore, storeNames }}>
       {children}
     </StoresContext.Provider>
   );
