@@ -31,12 +31,20 @@ export const fetchStoresAsync = async () => {
     return await supabase.from('stores').select('*');
 }
 
-export const addItemAsync = async (item: ItemPrice) => {
-    return await supabase.from('items').insert([item]);
+export const addItemAsync = async (itemName: string, storeId: string, price: number) => {
+    const itemId =  await supabase.from('items').insert({
+        name: itemName
+    }).select('id').single();
+
+    const insertedItemPrice = await supabase.from('item_prices').insert({
+        item_id: itemId.data.id,
+        store_id: storeId,
+        price: price
+    }).select('*').single();
 };
 
-export const addStoreAsync = async (store: Store) => {
-    return await supabase.from('stores').insert([store]);
+export const addStoreAsync = async (store: string) => {
+    return await supabase.from('stores').insert({ name: store });
 };
 
 export const signUpAsync = async (email: string, password: string, firstName: string, lastName: string) => {

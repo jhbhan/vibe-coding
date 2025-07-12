@@ -4,16 +4,25 @@ import React, { useState } from 'react';
 import { FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BaseModalProps } from './baseModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { addStoreAsync } from '@/constants/supabase';
+import { Store } from '@/types';
 
 export default function StoresModal({ visible, onClose }: BaseModalProps) {
   const { stores, addStore } = useStores();
   const [newStore, setNewStore] = useState('');
   const { user } = useAuth();
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (newStore.trim()) {
-      addStore(newStore.trim());
-      setNewStore('');
+      console.log('Adding new store:', newStore.trim());
+      const success = await addStoreAsync('asdf');
+      console.debug('Store added:', success);
+      if (success) {
+        alert('Store added successfully!');
+        setNewStore('');
+      } else {
+        alert('Store already exists or an error occurred.');
+      }
     }
   };
 

@@ -20,6 +20,5 @@ export interface ItemPrice {
 export interface Store {
     id: string;
     name: string;
-    image: string;
     user_id?: string, // Optional, if the store is user generated
 }

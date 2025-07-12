@@ -27,11 +27,7 @@ export default function NewItemModal(props: BaseModalProps) {
         }
         setAdding(true);
         try {
-          await addItemAsync({
-            item_id: '', // Let backend handle ID
-            store_id: selectedStore,
-            price: parseFloat(itemPrice),
-          });
+          await addItemAsync(itemName, selectedStore, parseFloat(itemPrice));
           onClose();
         } catch (e: any) {
           setAddError(e.message || 'Failed to add item.');
