@@ -1,11 +1,10 @@
+import { addStoreAsync } from '@/constants/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 import { useStores } from '@/contexts/StoresContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BaseModalProps } from './baseModal';
-import { useAuth } from '@/contexts/AuthContext';
-import { addStoreAsync } from '@/constants/supabase';
-import { Store } from '@/types';
 
 export default function StoresModal({ visible, onClose }: BaseModalProps) {
   const { stores, addStore } = useStores();
@@ -13,13 +12,15 @@ export default function StoresModal({ visible, onClose }: BaseModalProps) {
   const { user } = useAuth();
 
   const handleAdd = async () => {
-    if (newStore.trim()) {
-      console.log('Adding new store:', newStore.trim());
-      const success = await addStoreAsync('asdf');
-      console.debug('Store added:', success);
-      if (success) {
+    const trimmed = newStore.trim();
+    if (trimmed) {
+      console.debug('Adding new store:', trimmed);
+      const retVal = await addStoreAsync(trimmed);
+      console.debug('Store added:', retVal);
+      if (retVal && retVal.data) {
         alert('Store added successfully!');
         setNewStore('');
+        addStore(retVal.data)
       } else {
         alert('Store already exists or an error occurred.');
       }
@@ -43,7 +44,7 @@ export default function StoresModal({ visible, onClose }: BaseModalProps) {
               <View style={styles.storeItem}>
                 <Text style={styles.storeText}>{item.name}</Text>
                 {user?.email === item.user_id && (
-                  <TouchableOpacity onPress={() => addStore(item.name)}>
+                  <TouchableOpacity onPress={handleAdd}>
                     <MaterialIcons name="delete" size={20} color="#3b5998" />
                   </TouchableOpacity>
                 )}

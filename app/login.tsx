@@ -1,3 +1,4 @@
+import { DEV_EMAIL, DEV_PASSWORD, IS_DEV } from '@/constants/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
@@ -22,6 +23,11 @@ export default function LoginScreen() {
   const isPasswordMatch = !isSignUp || password === passwordConfirm;
   
   const handleLogin = async () => {
+    console.log(IS_DEV, DEV_EMAIL, DEV_PASSWORD);
+    if (IS_DEV) {
+      await signIn(DEV_EMAIL, DEV_PASSWORD);
+      return
+    }
     setError('');
     if (!validateEmail(email)) {
       setError('Please enter a valid email address.');

@@ -1,37 +1,19 @@
 import ListItem from '@/components/ListItem';
-import { ItemsContext, ItemsProvider, useItems } from '@/contexts/ItemsContext';
+import { ItemsProvider, useItems } from '@/contexts/ItemsContext';
+import { useStores } from '@/contexts/StoresContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import NewItemModal from '../modals/NewItemModal';
-import { useStores } from '@/contexts/StoresContext';
 
 const { width, height } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  const [showLanding, setShowLanding] = useState(true);
-  const fadeAnim = useRef(new Animated.Value(1)).current;
   const router = useRouter();
   const { items } = useItems();
   const { storeNames } = useStores();
    const [modalVisible, setModalVisible] = useState(false);
-  
-  useEffect(() => {
-    let isMounted = true;
-  
-    if (showLanding) {
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 3000,
-        useNativeDriver: true,
-      }).start(() => {
-        if (isMounted) setShowLanding(false);
-      });
-    }
-  
-    return () => { isMounted = false };
-  }, [showLanding]);
 
   const handlePress = (id: string) => {
     router.push({
@@ -45,43 +27,43 @@ export default function HomeScreen() {
   return (
     <ItemsProvider>
       <View style={styles.container}>
-        {showLanding ? (
-          <Animated.View style={[styles.landing, { opacity: fadeAnim }]}> 
-            <Text style={styles.title}>Compare</Text>
-          </Animated.View>
-        ) : items.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No items yet.</Text>
-            <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
-              <MaterialIcons name="add" size={24} color="#fff" />
-              <Text style={styles.addBtnText}>Add Items</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <>
-            <FlatList
-              data={items}
-              keyExtractor={item => item.id}
-              contentContainerStyle={styles.listContent}
-              renderItem={({ item }) => {
-                let lowest = item.prices.reduce((min, p) => (p.price < min.price ? p : min), item.prices[0]);
-                return (
-                  <ListItem
-                    name={item.name}
-                    isFavorite={item.isFavorite}
-                    lowestPrice={lowest.price}
-                    lowestStore={storeNames[lowest.store_id] ?? "N/A"}
-                    onPress={() => handlePress(item.id)}
-                  />
-                );
-              }}
-            />
-            <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
-              <MaterialIcons name="add" size={24} color="#fff" />
-              <Text style={styles.addBtnText}>Add Items</Text>
-            </TouchableOpacity>
-          </>
-        )}
+        {
+          items.length === 0 
+          ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No items yet.</Text>
+                <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
+                  <MaterialIcons name="add" size={24} color="#fff" />
+                  <Text style={styles.addBtnText}>Add Items</Text>
+                </TouchableOpacity>
+              </View>
+            ) 
+          : (
+            <>
+              <FlatList
+                data={items}
+                keyExtractor={item => item.id}
+                contentContainerStyle={styles.listContent}
+                renderItem={({ item }) => {
+                  let lowest = item.prices.reduce((min, p) => (p.price < min.price ? p : min), item.prices[0]);
+                  return (
+                    <ListItem
+                      name={item.name}
+                      isFavorite={item.isFavorite}
+                      lowestPrice={lowest.price}
+                      lowestStore={storeNames[lowest.store_id] ?? "N/A"}
+                      onPress={() => handlePress(item.id)}
+                    />
+                  );
+                }}
+              />
+              <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
+                <MaterialIcons name="add" size={24} color="#fff" />
+                <Text style={styles.addBtnText}>Add Items</Text>
+              </TouchableOpacity>
+            </>
+          )
+        }
         <NewItemModal 
           visible={modalVisible} 
           onClose={() => setModalVisible(false)} 

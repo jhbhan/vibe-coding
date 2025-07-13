@@ -26,23 +26,7 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const addItem = async (item: ItemViewModel) => {
-    if (!item || items.map(i => i.name).includes(item.name))
-      return; // Prevent duplicates or empty items
-
-    const itemToAdd: ItemPrice = {
-      item_id: '',
-      store_id: '',
-      price: 0
-    };
-    const { data, error } = await addItemAsync(itemToAdd);
-
-    if (error) {
-      alert('Error adding item: ' + error.message);
-      return;
-    }
-    else {
-      setItems(prev => [...prev, data as ItemViewModel]);
-    }
+    setItems(prev => [...prev, item]);
   };
 
   useEffect(() => {

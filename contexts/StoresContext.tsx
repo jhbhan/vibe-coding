@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 
 export interface StoresContextType {
   stores: Store[];
-  addStore: (store: string) => Promise<boolean>;
+  addStore: (store: Store) => void;
   storeNames: Record<number, string>
 }
 
@@ -24,7 +24,6 @@ export const StoresProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const fetchItems = useCallback(async () => {
       const { data, error } = await fetchStoresAsync();
-      console.log('Fetched stores:', data, error);
       if (!error && data) setStores(data as Store[]);
       if (error)
         alert(error)
@@ -34,28 +33,8 @@ export const StoresProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     fetchItems();
   }, []);
 
-  const addStore = async (store: string) => {
-    if (!store) {
-      alert('undefined store name')
-      return false;
-    }
-    if (stores.map(s => s.name).includes(store)) {
-      // If the store already exists, do not add it again
-      console.log('Store already exists:', store);
-      return false;
-    }
-    console.log('Adding store:', store);
-    const { data, error } = await addStoreAsync(store);
-    
-    console.debug('Added store:', data, error);
-
-    if (error) {
-      alert('Error adding store: ' + error.message);
-      return false;
-    }
-    else {
-      setStores(prev => [...prev, data as Store]);
-    }
+  const addStore = (store: Store) => {
+    setStores(prev => [...prev, store]);
   };
   
   const storeNames: Record<number, string> = useMemo(() => {
