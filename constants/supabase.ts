@@ -74,10 +74,11 @@ export const updateItemAsync = async (item: ItemViewModel) => {
         .eq('id', id);
     if (error) throw error;
     console.debug('Updated item:', data);
+
     const newPrices = item_prices.filter(p => !p.id) as ItemPrice[];
-    const existingPrices = item_prices.filter(p => p.id) as ItemPrice[]
-    
-    console.log('New prices:', newPrices);
+    const existingPrices = item_prices.filter(p => p.id) as ItemPrice[];
+
+    const updatedPricesList: ItemPrice[] = [];
 
     if (newPrices.length > 0) {
         const { data: insertedPrices, error: insertError } = await supabase
@@ -86,14 +87,17 @@ export const updateItemAsync = async (item: ItemViewModel) => {
             .select();
         if (insertError) throw insertError;
         console.debug('Inserted new prices:', insertedPrices);
+        updatedPricesList.push(...(insertedPrices as ItemPrice[]));
     }
     if (existingPrices.length > 0) {
-        const { data: updatedPrices, error: updateError } = await supabase
-            .from('item_prices')
-            .update(existingPrices.map(p => ({ price: p.price })))
-            .in('id', existingPrices.map(p => p.id));
-        if (updateError) throw updateError;
-        console.debug('Updated existing prices:', updatedPrices);
+        for (const price of existingPrices) {
+            const { error: updateError } = await supabase
+                .from('item_prices')
+                .update({ price: price.price })
+                .eq('id', price.id);
+            if (updateError) throw updateError;
+            updatedPricesList.push(price);
+        }
     }
 }
 
