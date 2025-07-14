@@ -22,7 +22,7 @@ export const StoresProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [stores, setStores] = useState<Store[]>(GROCERY_STORES);
   const { user } = useAuth();
 
-  const fetchItems = useCallback(async () => {
+  const fetchStores = useCallback(async () => {
       const { data, error } = await fetchStoresAsync();
       if (!error && data) setStores(data as Store[]);
       if (error)
@@ -30,7 +30,7 @@ export const StoresProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [user.user_id]);
 
   useEffect(() => {
-    fetchItems();
+    fetchStores();
   }, []);
 
   const addStore = (store: Store) => {

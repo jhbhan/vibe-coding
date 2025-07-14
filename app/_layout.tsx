@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import LoginScreen from './login';
 import { StoresContext, StoresProvider } from '@/contexts/StoresContext';
+import { ItemsProvider } from '@/contexts/ItemsContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -36,11 +37,13 @@ function LayoutRouter() {
 
   return (
     <StoresProvider>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="item-details" options={{ title: 'Item Details' }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <ItemsProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="item-details" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </ItemsProvider>
     </StoresProvider>
   );
 }

@@ -20,6 +20,7 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [items, setItems] = useState<ItemViewModel[]>([]);
 
   const fetchItems = async () => {
+    console.log('Fetching items...');
     const data = await fetchItemsAsync();
     if (data)
       setItems(data)

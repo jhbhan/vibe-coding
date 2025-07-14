@@ -1,4 +1,4 @@
-import { ItemPrice, ItemViewModel, Store } from '@/types';
+import { Item, ItemPrice, ItemViewModel, Store } from '@/types';
 import { createClient, PostgrestSingleResponse } from '@supabase/supabase-js';
 
 export type supabaseResponse<T> = PostgrestSingleResponse<T>;
@@ -27,7 +27,7 @@ export const fetchItemsAsync = async () => {
         item_prices (*)
       `);
 
-      console.log('Fetched items:', data, error);
+    console.log(JSON.stringify(data as ItemViewModel[], null, 2));
   
     if (error) throw error;
     return data as ItemViewModel[];
@@ -65,6 +65,37 @@ export const addItemAsync = async (itemName: string, storeId: string, price: num
         historicalLow: insertedItemPrice.data as ItemPrice
     };
 };
+
+export const updateItemAsync = async (item: ItemViewModel) => {
+    const { id, name, is_favorite, item_prices } = item;
+    const { data, error } = await supabase
+        .from('items')
+        .update({ name, is_favorite })
+        .eq('id', id);
+    if (error) throw error;
+    console.debug('Updated item:', data);
+    const newPrices = item_prices.filter(p => !p.id) as ItemPrice[];
+    const existingPrices = item_prices.filter(p => p.id) as ItemPrice[]
+    
+    console.log('New prices:', newPrices);
+
+    if (newPrices.length > 0) {
+        const { data: insertedPrices, error: insertError } = await supabase
+            .from('item_prices')
+            .insert(newPrices.map(p => ({ ...p, item_id: id })))
+            .select();
+        if (insertError) throw insertError;
+        console.debug('Inserted new prices:', insertedPrices);
+    }
+    if (existingPrices.length > 0) {
+        const { data: updatedPrices, error: updateError } = await supabase
+            .from('item_prices')
+            .update(existingPrices.map(p => ({ price: p.price })))
+            .in('id', existingPrices.map(p => p.id));
+        if (updateError) throw updateError;
+        console.debug('Updated existing prices:', updatedPrices);
+    }
+}
 
 export const addStoreAsync = async (store: string): Promise<PostgrestSingleResponse<Store>> => {
     return await supabase.from('stores').insert({ name: store }).select().single();

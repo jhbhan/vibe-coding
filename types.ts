@@ -1,15 +1,20 @@
 export interface Item {
     id: string;
     name: string;
-    isFavorite: boolean;
+    is_favorite: boolean;
 }
 
 export interface ItemViewModel extends Item {
-    prices: ItemPrice[],
-    historicalLow: ItemPrice
+    item_prices: ItemPrice[],
+    historical_low: ItemPrice
+}
+
+export interface EditableItemPrice extends ItemPrice {
+    price_string: string;
 }
 
 export interface ItemPrice {
+    id?: string
     item_id: string,
     store_id: string,
     price: number,

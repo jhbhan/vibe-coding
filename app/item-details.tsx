@@ -1,6 +1,7 @@
-import { ItemsContext, useItems } from '@/contexts/ItemsContext';
-import { StoresContext, useStores } from '@/contexts/StoresContext';
-import { ItemPrice } from '@/types';
+import { updateItemAsync } from '@/constants/supabase';
+import { useItems } from '@/contexts/ItemsContext';
+import { useStores } from '@/contexts/StoresContext';
+import { EditableItemPrice, Item, ItemViewModel } from '@/types';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -11,19 +12,33 @@ export default function ItemDetailsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { items } = useItems()
-  const { storeNames, stores } = useStores();
-  const itemId = params.id as string;
+  const { stores } = useStores();
+  const itemId = params.itemId as string;
   const item = items.find(i => i.id === itemId);
+
 
   // fallback for direct navigation
   const [name, setName] = useState(item?.name);
-  const [isFavorite, setIsFavorite] = useState(item?.isFavorite);
-  const [prices, setPrices] = useState<ItemPrice[]>(item.prices);
+  const [isFavorite, setIsFavorite] = useState(item?.is_favorite);
+  const [prices, setPrices] = useState<EditableItemPrice[]>(item?.item_prices.map(price => ({
+    ...price,
+    price_string: price.price.toString(),
+  })) || []);
+  console.log(prices);
 
-  const handlePriceChange = (index: number, field: 'store' | 'price', value: string) => {
+  const handlePriceChange = (
+    index: number,
+    field: 'store_id' | 'price_string',
+    value: string
+  ) => {
     setPrices(prices =>
       prices.map((p, i) =>
-        i === index ? { ...p, [field]: field === 'price' ? parseFloat(value) || 0 : value } : p
+        i === index
+          ? {
+              ...p,
+              [field]: value
+            }
+          : p
       )
     );
   };
@@ -31,13 +46,42 @@ export default function ItemDetailsScreen() {
   const handleAddPrice = () => {
     setPrices(prices => [
       ...prices,
-      { store_id: '', item_id: itemId, price: 0 }
+      {
+        item_id: itemId,
+        store_id: '',
+        price: 0,
+        price_string: '0.00'
+      }
     ]);
   };
 
   const handleRemovePrice = (index: number) => {
     setPrices(prices => prices.filter((_, i) => i !== index));
   };
+
+  const handleSave = async () => {
+    const updatedItem: ItemViewModel = {
+      id: itemId,
+      name,
+      is_favorite: isFavorite,
+      item_prices: prices.map(({price_string, ...rest}) => ({
+        ...rest,
+        price: parseFloat(price_string)
+      })),
+      historical_low: {
+        item_id: itemId,
+        store_id: prices[0]?.store_id || '',
+        price: Math.min(...prices.map(p => parseFloat(p.price_string))),
+      }
+    };
+
+    try {
+      await updateItemAsync(updatedItem);
+      router.back();
+    } catch (error) {
+      console.error('Failed to update item:', error);
+    }
+  }
 
   if (!item && !params.id) {
     return (
@@ -72,7 +116,7 @@ export default function ItemDetailsScreen() {
           <View style={styles.priceRow}>
             <Picker
               selectedValue={item.store_id}
-              onValueChange={(storeId) => handlePriceChange(index, 'store', storeId)}
+              onValueChange={(storeId) => handlePriceChange(index, 'store_id', storeId)}
               style={styles.priceInput}
             >
               <Picker.Item label="Select Store" value="" />
@@ -82,8 +126,8 @@ export default function ItemDetailsScreen() {
             </Picker>
             <TextInput
               style={styles.priceInput}
-              value={item.price.toString()}
-              onChangeText={text => handlePriceChange(index, 'price', text)}
+              value={item.price_string}
+              onChangeText={text => handlePriceChange(index, 'price_string', text)}
               placeholder="$0.00"
               placeholderTextColor="#aaa"
               keyboardType="numeric"
@@ -100,12 +144,20 @@ export default function ItemDetailsScreen() {
           </TouchableOpacity>
         }
       />
+
+      <TouchableOpacity
+        style={styles.saveBtn}
+        onPress={handleSave}
+      >
+        <Text style={styles.saveBtnText}>Save</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: 60,
     flex: 1,
     backgroundColor: '#f7f9fb',
     padding: 24,
@@ -176,4 +228,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 16,
   },
-}); 
+  saveBtn: {
+    backgroundColor: '#3b5998',
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 16
+  },
+  saveBtnText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+});

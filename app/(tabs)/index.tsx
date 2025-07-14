@@ -1,10 +1,10 @@
 import ListItem from '@/components/ListItem';
-import { ItemsProvider, useItems } from '@/contexts/ItemsContext';
+import { useItems } from '@/contexts/ItemsContext';
 import { useStores } from '@/contexts/StoresContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import NewItemModal from '../modals/NewItemModal';
 
 const { width, height } = Dimensions.get('window');
@@ -13,7 +13,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { items } = useItems();
   const { storeNames } = useStores();
-   const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const handlePress = (id: string) => {
     router.push({
@@ -25,51 +25,49 @@ export default function HomeScreen() {
   };
 
   return (
-    <ItemsProvider>
-      <View style={styles.container}>
-        {
-          items.length === 0 
-          ? (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No items yet.</Text>
-                <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
-                  <MaterialIcons name="add" size={24} color="#fff" />
-                  <Text style={styles.addBtnText}>Add Items</Text>
-                </TouchableOpacity>
-              </View>
-            ) 
-          : (
-            <>
-              <FlatList
-                data={items}
-                keyExtractor={item => item.id}
-                contentContainerStyle={styles.listContent}
-                renderItem={({ item }) => {
-                  let lowest = item.prices.reduce((min, p) => (p.price < min.price ? p : min), item.prices[0]);
-                  return (
-                    <ListItem
-                      name={item.name}
-                      isFavorite={item.isFavorite}
-                      lowestPrice={lowest.price}
-                      lowestStore={storeNames[lowest.store_id] ?? "N/A"}
-                      onPress={() => handlePress(item.id)}
-                    />
-                  );
-                }}
-              />
+    <View style={styles.container}>
+      {
+        items.length === 0 
+        ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No items yet.</Text>
               <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
                 <MaterialIcons name="add" size={24} color="#fff" />
                 <Text style={styles.addBtnText}>Add Items</Text>
               </TouchableOpacity>
-            </>
-          )
-        }
-        <NewItemModal 
-          visible={modalVisible} 
-          onClose={() => setModalVisible(false)} 
-        />
-      </View>
-    </ItemsProvider>
+            </View>
+          ) 
+        : (
+          <>
+            <FlatList
+              data={items}
+              keyExtractor={item => item.id}
+              contentContainerStyle={styles.listContent}
+              renderItem={({ item }) => {
+                let lowest = item.item_prices.reduce((min, p) => (p.price < min.price ? p : min), item.item_prices[0]);
+                return (
+                  <ListItem
+                    name={item.name}
+                    isFavorite={item.is_favorite}
+                    lowestPrice={lowest.price}
+                    lowestStore={storeNames[lowest.store_id] ?? "N/A"}
+                    onPress={() => handlePress(item.id)}
+                  />
+                );
+              }}
+            />
+            <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
+              <MaterialIcons name="add" size={24} color="#fff" />
+              <Text style={styles.addBtnText}>Add Items</Text>
+            </TouchableOpacity>
+          </>
+        )
+      }
+      <NewItemModal 
+        visible={modalVisible} 
+        onClose={() => setModalVisible(false)} 
+      />
+    </View>
   );
 }
 
